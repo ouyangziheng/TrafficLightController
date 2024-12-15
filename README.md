@@ -1,6 +1,5 @@
-# 可配置交通灯控制器
+# Configurable Traffic Light Controller
 
-## 简介
+## Introduction
 
-本项目为本人Verilog期末大作业，实现了一个基于 Verilog 的可配置交通灯控制器模块。
-
+This project is my final assignment for the **second-year Verilog course at Nankai University**. It implements a configurable traffic light controller module based on Verilog. The design meets the requirement for synchronized switching between traffic lights and introduces an additional manual control feature.
