@@ -6,8 +6,11 @@ module traffic_light_controller (
     output reg R,           // 红色 LED 控制
     output reg G,           // 绿色 LED 控制
     output reg [3:0] time_remaining, // 显示剩余时间
-    output reg[7:0] seg    // 七段显示器输出
+    output reg [7:0] seg,    // 七段显示器输出
+    output [1:0] scan_select      // 选择七段显示器
 );
+
+assign scan_select = 2'b10;  // 选择七段显示器
 
 // 定义状态
 parameter RED_TIME = 10, YELLOW_TIME = 10, GREEN_TIME = 10;
@@ -19,7 +22,7 @@ reg [3:0] counter;        // 计数器（4位，足够容纳最大的计时值�
 
 // 分频器相关变量
 reg [26:0] clk_div_counter;  // 用于分频的计数器，假设输入时钟为 100 MHz
-reg [10:0] clk_div_counter_400Hz;  // 用于分频的计数器
+reg [26:0] clk_div_counter_400Hz;  // 用于分频的计数器
 reg clk_1Hz;                  // 1Hz 输出时钟
 reg clk_400Hz;               // 400Hz 输出时钟
 

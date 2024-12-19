@@ -26,6 +26,7 @@ traffic_light_controller uut (
     .G(G),
     .time_remaining(time_remaining),
     .seg(seg)
+    .scan_select(scan_select)
 );
 
 // 初始测试

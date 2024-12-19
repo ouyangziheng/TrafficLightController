@@ -42,3 +42,9 @@ set_property PACKAGE_PIN H7 [get_ports {time_remaining[3]}]
 set_property PACKAGE_PIN D5 [get_ports {time_remaining[2]}]
 set_property PACKAGE_PIN A3 [get_ports {time_remaining[1]}]
 set_property PACKAGE_PIN A5 [get_ports {time_remaining[0]}]
+
+
+set_property IOSTANDARD LVCMOS33 [get_ports {scan_select[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {scan_select[0]}]
+set_property PACKAGE_PIN E26 [get_ports {scan_select[1]}]
+set_property PACKAGE_PIN G25 [get_ports {scan_select[0]}]
