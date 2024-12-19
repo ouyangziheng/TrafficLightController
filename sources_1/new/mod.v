@@ -4,16 +4,24 @@ module traffic_light_controller (
     input manual_override,  // 外部强制控制信号
     input [1:0] manual_state, // 外部输入的手动控制状态
     output reg R,           // 红色 LED 控制
-    output reg G            // 绿色 LED 控制
+    output reg G,           // 绿色 LED 控制
+    output reg [3:0] time_remaining, // 显示剩余时间
+    output [7:0] seg       // 七段显示器输出
 );
 
 // 定义状态
-parameter RED_TIME = 10, YELLOW_TIME = 10, GREEN_TIME = 10;
+parameter RED_TIME = 100, YELLOW_TIME = 10, GREEN_TIME = 10;
 parameter RED_STATE = 2'b00, YELLOW_STATE = 2'b01, GREEN_STATE = 2'b10;
 
 // 状态寄存器
 reg [1:0] state;          // 当前状态
 reg [3:0] counter;        // 计数器（4位，足够容纳最大的计时值）
+
+// 实例化 time_display 模块
+time_display time_display_inst (
+    .time_remaining(time_remaining),
+    .seg(seg)  
+);
 
 // 时钟驱动的状态机
 always @(posedge clk or posedge reset) begin
@@ -21,7 +29,8 @@ always @(posedge clk or posedge reset) begin
         state <= RED_STATE;    
         counter <= 0;        
         R <= 0;                 
-        G <= 0;               
+        G <= 0;                 
+        time_remaining <= RED_TIME;  // 初始状态下，剩余时间为红灯时间
 
     end else if (manual_override) begin
         // 如果外部手动控制信号被激活，使用手动控制的状态
@@ -30,18 +39,22 @@ always @(posedge clk or posedge reset) begin
             RED_STATE: begin
                 R <= 0;        
                 G <= 1;        
+                time_remaining <= RED_TIME;  // 设置红灯的时间
             end
             YELLOW_STATE: begin
                 R <= 1;      
                 G <= 1;   
+                time_remaining <= YELLOW_TIME;  // 设置黄灯的时间
             end
             GREEN_STATE: begin
                 R <= 1;       
                 G <= 0;        
+                time_remaining <= GREEN_TIME;  // 设置绿灯的时间
             end
             default: begin
                 R <= 0;        
                 G <= 0;
+                time_remaining <= 0;  // 非法状态，时间为0
             end
         endcase
 
@@ -55,22 +68,26 @@ always @(posedge clk or posedge reset) begin
                     counter <= YELLOW_TIME; // 计数器设置为黄灯时间
                     R <= 1;                 //
                     G <= 1;                 // 
+                    time_remaining <= YELLOW_TIME; // 更新剩余时间
                 end
                 YELLOW_STATE: begin
                     state <= GREEN_STATE;   // 黄灯结束，进入绿灯
                     counter <= GREEN_TIME;  // 计数器设置为绿灯时间
                     R <= 1;                 // 
                     G <= 0;                 // 
+                    time_remaining <= GREEN_TIME; // 更新剩余时间
                 end
                 GREEN_STATE: begin
                     state <= RED_STATE;     // 绿灯结束，进入红灯
                     counter <= RED_TIME;    // 计数器设置为红灯时间
                     R <= 0;                 // 
                     G <= 1;                 // 
+                    time_remaining <= RED_TIME; // 更新剩余时间
                 end
             endcase
         end else begin
             counter <= counter - 1;  // 计数器递减
+            time_remaining <= counter - 1;  // 更新剩余时间
         end
     end
 end
