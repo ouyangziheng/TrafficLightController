@@ -3,7 +3,7 @@ module time_display (
     output reg [7:0] seg         // 七段显示器的控制信号
 );
 
-// 显示数字
+// 根据 time_remaining 显示数字
 always @(*) begin
     case (time_remaining)
         4'b0000: seg = 8'b01111110; // 0

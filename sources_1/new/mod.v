@@ -10,12 +10,16 @@ module traffic_light_controller (
 );
 
 // 定义状态
-parameter RED_TIME = 100, YELLOW_TIME = 10, GREEN_TIME = 10;
+parameter RED_TIME = 10, YELLOW_TIME = 10, GREEN_TIME = 10;
 parameter RED_STATE = 2'b00, YELLOW_STATE = 2'b01, GREEN_STATE = 2'b10;
 
 // 状态寄存器
 reg [1:0] state;          // 当前状态
 reg [3:0] counter;        // 计数器（4位，足够容纳最大的计时值）
+
+// 分频器相关变量
+reg [26:0] clk_div_counter;  // 用于分频的计数器，假设输入时钟为 100 MHz
+reg clk_1Hz;                  // 1Hz 输出时钟
 
 // 实例化 time_display 模块
 time_display time_display_inst (
@@ -23,15 +27,29 @@ time_display time_display_inst (
     .seg(seg)  
 );
 
-// 时钟驱动的状态机
+// 时钟分频过程：将 100MHz 时钟分频为 1Hz
 always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        clk_div_counter <= 0;
+        clk_1Hz <= 0;
+    end else begin
+        if (clk_div_counter == 27'd99999999) begin  // 分频到 1Hz (100 MHz -> 1 Hz)
+            clk_div_counter <= 0;
+            clk_1Hz <= ~clk_1Hz;  // 每 100,000,000 个时钟周期翻转一次
+        end else begin
+            clk_div_counter <= clk_div_counter + 1;
+        end
+    end
+end
+
+// 时钟驱动的状态机
+always @(posedge clk_1Hz or posedge reset) begin
     if (reset) begin
         state <= RED_STATE;    
         counter <= 0;        
         R <= 0;                 
         G <= 0;                 
         time_remaining <= RED_TIME;  // 初始状态下，剩余时间为红灯时间
-
     end else if (manual_override) begin
         // 如果外部手动控制信号被激活，使用手动控制的状态
         state <= manual_state;  // 切换到手动指定的状态
@@ -87,7 +105,7 @@ always @(posedge clk or posedge reset) begin
             endcase
         end else begin
             counter <= counter - 1;  // 计数器递减
-            time_remaining <= counter - 1;  // 更新剩余时间
+            time_remaining <= counter;  // 更新剩余时间
         end
     end
 end
